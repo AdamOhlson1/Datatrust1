@@ -1,3 +1,4 @@
+using Azure.Identity;
 using DataTrust.Data;
 using DataTrust.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -7,6 +8,12 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
+
+/*var keyVaultEndpoint = new Uri(Environment.GetEnvironmentVariable("VaultUri"));
+builder.Configuration.AddAzureKeyVault(keyVaultEndpoint, new DefaultAzureCredential());*/
+
+var keyVaultEndpoint = new Uri(("https://keyvaultgrupp.vault.azure.net/"));
+builder.Configuration.AddAzureKeyVault(keyVaultEndpoint, new DefaultAzureCredential()); 
 
 builder.Services.AddAuthentication(options =>
 {
@@ -73,6 +80,7 @@ builder.Services.AddAuthentication(options =>
     options.Scope.Add("email");
     options.SaveTokens = true;
     options.GetClaimsFromUserInfoEndpoint = true;
+    options.SkipUnrecognizedRequests = true;
 });
 
 builder.Services.AddAuthorization(options =>
@@ -83,7 +91,7 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration["DefaultConnections"]));
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
